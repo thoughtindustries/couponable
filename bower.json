@@ -1,0 +1,25 @@
+{
+  "name": "couponable",
+  "version": "1.0.0",
+  "description": "Helper functions for dealing with coupons.",
+  "main": [ "index.js" ],
+  "dependencies": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/thoughtindustries/couponable.git"
+  },
+  "keywords": [
+    "coupon"
+  ],
+  "author": "Chris McC",
+  "license": "MIT",
+  "ignore": [
+    "bower_components",
+    "bower.json",
+    "package.json",
+    "test.js",
+    "node_modules",
+    "Makefile"
+  ]
+}

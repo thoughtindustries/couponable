@@ -1,0 +1,14 @@
+{
+  "name": "couponable",
+  "description": "Helper functions for dealing with coupons.",
+  "version": "1.0.0",
+  "author": "Chris McC",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/thoughtindustries/couponable.git"
+  },
+  "devDependencies": {
+    "mocha": "*"
+  }
+}
