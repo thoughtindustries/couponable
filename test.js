@@ -18,6 +18,15 @@ describe('totalDueNow', function() {
     }), 12);
   });
 
+  it('calculates correctly without shipping', function() {
+    assert.equal(totalDueNow({
+      quantity: 2,
+      shippingOption: {priceInCents: 2},
+      variation: {priceInCents: 2},
+      priceInCents: 2
+    }, false), 8);
+  });
+
   it('handles coupons correctly', function() {
     assert.equal(totalDueNow({
       quantity: 1,
