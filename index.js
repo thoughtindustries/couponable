@@ -44,7 +44,13 @@ function totalDueNow(orderItem, includeShipping) {
     total = Math.round(discountable(total, orderItem.coupon.percentOff, orderItem.coupon.amountOffInCents));
   }
 
-  return total * quantity;
+  total = total * quantity;
+
+  if (orderItem.totalTaxInCents) {
+    total = total + orderItem.totalTaxInCents;
+  }
+
+  return total;
 }
 
 // TODO: figure out i18n story here
