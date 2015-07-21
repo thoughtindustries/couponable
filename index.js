@@ -29,7 +29,9 @@ function totalDueNow(orderItem, includeShipping) {
   var quantity = orderItem.quantity || 0,
     total = orderItem.priceInCents;
 
-  // default to true
+  // if includeShipping is not passed into this function
+  // or does not strictly equal false, then we set it to true automatically
+  // to include shipping in the total calcluation.
   includeShipping = includeShipping === false ? false : true;
 
   if (includeShipping && orderItem.shippingOption) {
