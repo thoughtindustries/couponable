@@ -25,14 +25,11 @@ function discountable(amountInCents, percentOff, amountOffInCents) {
   }
 }
 
-function totalDueNow(orderItem, includeShipping) {
+function totalDueNow(orderItem) {
   var quantity = orderItem.quantity || 0,
     total = orderItem.priceInCents;
 
-  // default to true
-  includeShipping = includeShipping === false ? false : true;
-
-  if (includeShipping && orderItem.shippingOption) {
+  if (orderItem.shippingOption) {
     total += orderItem.shippingOption.priceInCents || 0;
   }
 
