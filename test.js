@@ -12,10 +12,9 @@ describe('totalDueNow', function() {
   it('calculates correctly', function() {
     assert.equal(totalDueNow({
       quantity: 2,
-      shippingOption: {priceInCents: 2},
       variation: {priceInCents: 2},
       priceInCents: 2
-    }), 12);
+    }), 8);
   });
 
   it('handles coupons correctly', function() {

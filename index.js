@@ -29,10 +29,6 @@ function totalDueNow(orderItem) {
   var quantity = orderItem.quantity || 0,
     total = orderItem.priceInCents;
 
-  if (orderItem.shippingOption) {
-    total += orderItem.shippingOption.priceInCents || 0;
-  }
-
   if (orderItem.variation) {
     total += orderItem.variation.priceInCents || 0;
   }
