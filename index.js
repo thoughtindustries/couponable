@@ -26,18 +26,22 @@ function discountable(amountInCents, percentOff, amountOffInCents) {
 }
 
 function totalDueNow(orderItem) {
-  var quantity = orderItem.quantity || 0,
-    total = orderItem.priceInCents;
+  if (orderItem.total) {
+    return orderItem.total;
+  } else {
+    var quantity = orderItem.quantity || 0,
+      total = orderItem.priceInCents;
 
-  if (orderItem.variation) {
-    total += orderItem.variation.priceInCents || 0;
+    if (orderItem.variation) {
+      total += orderItem.variation.priceInCents || 0;
+    }
+
+    if (orderItem.coupon) {
+      total = Math.round(discountable(total, orderItem.coupon.percentOff, orderItem.coupon.amountOffInCents));
+    }
+
+    return total * quantity;
   }
-
-  if (orderItem.coupon) {
-    total = Math.round(discountable(total, orderItem.coupon.percentOff, orderItem.coupon.amountOffInCents));
-  }
-
-  return total * quantity;
 }
 
 // TODO: figure out i18n story here

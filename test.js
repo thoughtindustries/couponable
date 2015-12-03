@@ -17,6 +17,12 @@ describe('totalDueNow', function() {
     }), 8);
   });
 
+  it('calculates correctly when a total is provided', function() {
+    assert.equal(totalDueNow({
+      total: 8
+    }), 8);
+  });
+
   it('handles coupons correctly', function() {
     assert.equal(totalDueNow({
       quantity: 1,
