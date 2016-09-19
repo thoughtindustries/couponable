@@ -1,6 +1,8 @@
-function priceFormat(amountInCents) {
-  // TODO: use numeraljs when this needs internationalization? or formatjs ?
-  return '$' + (amountInCents / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+// if the comma or decimal portions of the price need internationalization
+// then considering switching to numbro or formatjs
+function priceFormat(amountInCents, currencySymbol) {
+  currencySymbol = currencySymbol || '$';
+  return currencySymbol + (amountInCents / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 function discountable(amountInCents, percentOff, amountOffInCents) {
@@ -45,12 +47,12 @@ function totalDueNow(orderItem) {
 }
 
 // TODO: figure out i18n story here
-function totalLineOne(orderItem) {
+function totalLineOne(orderItem, currencySymbol) {
   var total, totalWithInterval;
   if (totalDueNow(orderItem) === 0) {
     total = totalWithInterval = 'Free';
   } else {
-    total = priceFormat(totalDueNow(orderItem));
+    total = priceFormat(totalDueNow(orderItem), currencySymbol);
     totalWithInterval = total + ' / ' + orderItem.interval;
   }
 
@@ -67,17 +69,17 @@ function totalLineOne(orderItem) {
   }
 }
 
-function totalLineTwo(orderItem) {
+function totalLineTwo(orderItem, currencySymbol) {
   if (orderItem.purchasableType === 'bundle' && !orderItem.gift && orderItem.coupon && orderItem.coupon.duration !== 'forever') {
-    return priceFormat(totalRecurring(orderItem)) + ' / ' + orderItem.interval;
+    return priceFormat(totalRecurring(orderItem), currencySymbol) + ' / ' + orderItem.interval;
   } else {
     return null;
   }
 }
 
-function totalDescription(orderItem) {
-  var lineOne = totalLineOne(orderItem),
-    lineTwo = totalLineTwo(orderItem);
+function totalDescription(orderItem, currencySymbol) {
+  var lineOne = totalLineOne(orderItem, currencySymbol),
+    lineTwo = totalLineTwo(orderItem, currencySymbol);
 
   if (lineTwo) {
     return lineOne + ', then ' + lineTwo;

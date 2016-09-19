@@ -57,6 +57,15 @@ describe('totalLineOne', function() {
       }), '$2.00 / month');
     });
 
+    it('returns an alternate currency symbol', function() {
+      assert.equal(totalLineOne({
+        quantity: 1,
+        purchasableType: 'bundle',
+        interval: 'month',
+        priceInCents: 200
+      }, '£'), '£2.00 / month');
+    });
+
     it('returns the price without the interval if it is a gift', function() {
       assert.equal(totalLineOne({
         quantity: 1,
@@ -154,6 +163,17 @@ describe('totalLineTwo', function() {
       }), '$0.06 / month');
     });
 
+    it('returns an alternate currency symbol', function() {
+      assert.equal(totalLineTwo({
+        quantity: 1,
+        purchasableType: 'bundle',
+        interval: 'month',
+        coupon: {amountOffInCents: 4, duration: 'once'},
+        priceInCents: 6
+      }, '£'), '£0.06 / month');
+    });
+
+
     it('returns null if there is a forever coupon', function() {
       assert.equal(totalLineTwo({
         quantity: 1,
@@ -184,6 +204,16 @@ describe('totalDescription', function() {
       coupon: {amountOffInCents: 4, duration: 'once'},
       priceInCents: 6
     }), '$0.02 for the first month, then $0.06 / month');
+  });
+
+  it('returns an alternate currency symbol', function() {
+    assert.equal(totalDescription({
+      quantity: 1,
+      purchasableType: 'bundle',
+      interval: 'month',
+      coupon: {amountOffInCents: 4, duration: 'once'},
+      priceInCents: 6
+    }, '£'), '£0.02 for the first month, then £0.06 / month');
   });
 
   it('returns just line one if line two is not set', function() {
