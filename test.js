@@ -163,6 +163,16 @@ describe('totalLineTwo', function() {
       }), '$0.06 / month');
     });
 
+    it('returns the total recurring while taking quantity into account', function() {
+      assert.equal(totalLineTwo({
+        quantity: 10,
+        purchasableType: 'bundle',
+        interval: 'month',
+        coupon: {amountOffInCents: 4, duration: 'once'},
+        priceInCents: 6
+      }), '$0.60 / month');
+    });
+
     it('returns an alternate currency symbol', function() {
       assert.equal(totalLineTwo({
         quantity: 1,

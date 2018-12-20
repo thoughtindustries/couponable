@@ -1,6 +1,6 @@
 {
   "name": "couponable",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "description": "Helper functions for dealing with coupons.",
   "main": [ "index.js" ],
   "dependencies": {

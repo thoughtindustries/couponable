@@ -94,7 +94,7 @@ function totalRecurring(orderItem) {
       // 'due now' discount applies forever
       return totalDueNow(orderItem);
     } else {
-      return orderItem.priceInCents;
+      return orderItem.priceInCents * (orderItem.quantity || 1);
     }
   } else {
     return null;
