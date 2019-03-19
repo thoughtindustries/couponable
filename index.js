@@ -32,13 +32,17 @@ function totalDueNow(orderItem) {
     return orderItem.total;
   } else {
     var quantity = orderItem.quantity || 0,
-      total = orderItem.priceInCents;
+        total = orderItem.priceInCents;
 
     if (orderItem.variation) {
       total += orderItem.variation.priceInCents || 0;
     }
 
     if (orderItem.coupon) {
+      if (orderItem.purchasableType === 'bundle' && quantity > 1) {
+        total = total * quantity;
+        quantity = 1;
+      }
       total = Math.round(discountable(total, orderItem.coupon.percentOff, orderItem.coupon.amountOffInCents));
     }
 

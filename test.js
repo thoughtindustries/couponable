@@ -30,6 +30,15 @@ describe('totalDueNow', function() {
       priceInCents: 2
     }), 1);
   });
+
+  it('handles coupons for bundles correctly', function() {
+    assert.equal(totalDueNow({
+      quantity: 10,
+      coupon: {amountOffInCents: 5},
+      priceInCents: 10,
+      purchasableType: 'bundle'
+    }), 95)
+  });
 });
 
 describe('totalRecurring', function() {
