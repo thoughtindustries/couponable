@@ -5,8 +5,8 @@ function priceFormat(amountInCents, currencySymbol) {
   return currencySymbol + (amountInCents / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-function discountable(amountInCents, percentOff, amountOffInCents, isBundle, quantity) {
-  var discount, appliedDiscount, total;
+function discountable(amountInCents, percentOff, amountOffInCents) {
+  var discount, appliedDiscount;
 
   if (percentOff) {
     discount = amountInCents * percentOff / 100;
@@ -17,13 +17,13 @@ function discountable(amountInCents, percentOff, amountOffInCents, isBundle, qua
   }
 
   discount = Math.abs(discount);
-  total = (isBundle) ? amountInCents * quantity : amountInCents;
-  appliedDiscount = total - discount;
+
+  appliedDiscount = amountInCents - discount;
 
   if (appliedDiscount <= 0) {
     return 0;
   } else {
-    return isBundle ? (appliedDiscount / quantity) : appliedDiscount;
+    return appliedDiscount;
   }
 }
 
@@ -32,15 +32,18 @@ function totalDueNow(orderItem) {
     return orderItem.total;
   } else {
     var quantity = orderItem.quantity || 0,
-      total = orderItem.priceInCents,
-      isBundle = orderItem.purchasableType && orderItem.purchasableType === 'bundle';
+        total = orderItem.priceInCents;
 
     if (orderItem.variation) {
       total += orderItem.variation.priceInCents || 0;
     }
 
     if (orderItem.coupon) {
-      total = Math.round(discountable(total, orderItem.coupon.percentOff, orderItem.coupon.amountOffInCents, isBundle, quantity));
+      if (orderItem.purchasableType === 'bundle' && quantity > 1) {
+        total = total * quantity;
+        quantity = 1;
+      }
+      total = Math.round(discountable(total, orderItem.coupon.percentOff, orderItem.coupon.amountOffInCents));
     }
 
     return total * quantity;
