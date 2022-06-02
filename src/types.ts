@@ -5,7 +5,7 @@ type Variation = {
 type Coupon = {
   percentOff?: number,
   amountOffInCents?: number,
-  duration: string,
+  duration?: string,
   durationInMonths?: number
 }
 
@@ -14,8 +14,8 @@ export type OrderItem = {
   quantity?: number,
   priceInCents: number,
   variation?: Variation,
-  purchasableType: string,
+  purchasableType?: string,
   coupon?: Coupon,
   interval?: string,
-  gift: boolean
+  gift?: boolean
 }

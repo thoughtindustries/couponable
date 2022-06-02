@@ -84,7 +84,7 @@ export function totalLineOne(orderItem: OrderItem, currencySymbol?: string) {
 
 export function totalLineTwo(orderItem: OrderItem, currencySymbol?: string) {
   if (orderItem.purchasableType === 'bundle' && !orderItem.gift && orderItem.coupon && orderItem.coupon.duration !== 'forever') {
-    return priceFormat(totalRecurring(orderItem), currencySymbol) + ' / ' + orderItem.interval;
+    return priceFormat(totalRecurring(orderItem) || 0, currencySymbol) + ' / ' + orderItem.interval;
   } else {
     return null;
   }
@@ -110,6 +110,6 @@ export function totalRecurring(orderItem: OrderItem) {
       return orderItem.priceInCents * (orderItem.quantity || 1);
     }
   } else {
-    return 0;
+    return null;
   }
 }
