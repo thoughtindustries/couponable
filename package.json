@@ -8,7 +8,26 @@
     "type": "git",
     "url": "git://github.com/thoughtindustries/couponable.git"
   },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean"
+  },
   "devDependencies": {
-    "mocha": "*"
+    "mocha": "*",
+    "tsup": "^6.0.1",
+    "typescript": "^4.7.2"
   }
 }
