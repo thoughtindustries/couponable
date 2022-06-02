@@ -4,10 +4,17 @@
 ## Usage
 
 ```js
-var couponable = require('couponable');
-couponable.discountable(amountInCents, percentOff, amountOffInCents);
-couponable.totalDueNow(orderItem);
-couponable.totalRecurring(orderItem);
-couponable.totalLineOne(orderItem);
-couponable.totalLineTwo(orderItem);
+import {
+  discountable,
+  totalDueNow,
+  totalRecurring,
+  totalLineOne,
+  totalLineTwo
+} from 'couponable';
+
+discountable(amountInCents, percentOff, amountOffInCents);
+totalDueNow(orderItem);
+totalRecurring(orderItem);
+totalLineOne(orderItem);
+totalLineTwo(orderItem);
 ```
