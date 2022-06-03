@@ -1,153 +1,156 @@
-var couponable = require('.');
-
-var discountable = couponable.discountable;
-var totalDueNow = couponable.totalDueNow;
-var totalRecurring = couponable.totalRecurring;
-var totalLineOne = couponable.totalLineOne;
-var totalLineTwo = couponable.totalLineTwo;
-var totalDescription = couponable.totalDescription;
-var assert = require('assert');
+import {
+  discountable,
+  totalDueNow,
+  totalRecurring,
+  totalLineOne,
+  totalLineTwo,
+  totalDescription
+} from '../src/utilities';
 
 describe('totalDueNow', function() {
   it('calculates correctly', function() {
-    assert.equal(totalDueNow({
+    expect(totalDueNow({
       quantity: 2,
       variation: {priceInCents: 2},
       priceInCents: 2
-    }), 8);
+    })).toEqual(8);
   });
 
   it('calculates correctly when a total is provided', function() {
-    assert.equal(totalDueNow({
-      total: 8
-    }), 8);
+    expect(totalDueNow({
+      total: 8,
+      priceInCents: 0
+    })).toEqual(8);
   });
 
   it('handles coupons correctly', function() {
-    assert.equal(totalDueNow({
+    expect(totalDueNow({
       quantity: 1,
       coupon: {percentOff: 50},
       priceInCents: 2
-    }), 1);
+    })).toEqual(1);
   });
 
   it('handles coupons for bundles correctly', function() {
-    assert.equal(totalDueNow({
+    expect(totalDueNow({
       quantity: 10,
       coupon: {amountOffInCents: 5},
       priceInCents: 10,
       purchasableType: 'bundle'
-    }), 95)
+    })).toEqual(95);
   });
 });
 
 describe('totalRecurring', function() {
   it('returns null for non-bundles', function() {
-    assert.equal(totalRecurring({purchasableType: 'course'}), null);
+    expect(totalRecurring({
+      purchasableType: 'course',
+      priceInCents: 0
+    })).toBeNull();
   });
 
   it('returns priceInCents for bundles without coupons', function() {
-    assert.equal(totalRecurring({purchasableType: 'bundle', priceInCents: 2}), 2);
+    expect(totalRecurring({purchasableType: 'bundle', priceInCents: 2})).toEqual(2);
   });
 
   it('returns totalDueNow for bundles with forever coupons', function() {
-    assert.equal(totalRecurring({purchasableType: 'bundle', priceInCents: 2, quantity: 1, coupon: {duration: 'forever', percentOff: 50}}), 1);
+    expect(totalRecurring({purchasableType: 'bundle', priceInCents: 2, quantity: 1, coupon: {duration: 'forever', percentOff: 50}})).toEqual(1);
   });
 });
 
 describe('totalLineOne', function() {
   describe('with a bundle', function() {
     it('returns the price with the interval if there is no coupon', function() {
-      assert.equal(totalLineOne({
+      expect(totalLineOne({
         quantity: 1,
         purchasableType: 'bundle',
         interval: 'month',
         priceInCents: 200
-      }), '$2.00 / month');
+      })).toEqual('$2.00 / month');
     });
 
     it('returns an alternate currency symbol', function() {
-      assert.equal(totalLineOne({
+      expect(totalLineOne({
         quantity: 1,
         purchasableType: 'bundle',
         interval: 'month',
         priceInCents: 200
-      }, '£'), '£2.00 / month');
+      }, '£')).toEqual('£2.00 / month');
     });
 
     it('returns the price without the interval if it is a gift', function() {
-      assert.equal(totalLineOne({
+      expect(totalLineOne({
         quantity: 1,
         gift: true,
         purchasableType: 'bundle',
         interval: 'month',
         priceInCents: 200
-      }), '$2.00');
+      })).toEqual('$2.00');
     });
 
     it('returns the price with the interval if there is no coupon', function() {
-      assert.equal(totalLineOne({
+      expect(totalLineOne({
         quantity: 1,
         purchasableType: 'bundle',
         interval: 'month',
         priceInCents: 200
-      }), '$2.00 / month');
+      })).toEqual('$2.00 / month');
     });
 
     it('returns the price with the extended interval if there is a repeating coupon', function() {
-      assert.equal(totalLineOne({
+      expect(totalLineOne({
         quantity: 1,
         purchasableType: 'bundle',
         interval: 'month',
         coupon: {amountOffInCents: 199, duration: 'repeating', durationInMonths: 4},
         priceInCents: 200
-      }), '$0.01 / month for the first 4 months');
+      })).toEqual('$0.01 / month for the first 4 months');
     });
 
     it('returns the price with the extended interval if there is a once coupon', function() {
-      assert.equal(totalLineOne({
+      expect(totalLineOne({
         quantity: 1,
         purchasableType: 'bundle',
         interval: 'month',
         coupon: {amountOffInCents: 199, duration: 'once'},
         priceInCents: 200
-      }), '$0.01 for the first month');
+      })).toEqual('$0.01 for the first month');
     });
 
     it('returns the price with interval if the coupon is forever', function() {
-      assert.equal(totalLineOne({
+      expect(totalLineOne({
         quantity: 1,
         purchasableType: 'bundle',
         interval: 'month',
         coupon: {amountOffInCents: 1, duration: 'forever'},
         priceInCents: 2
-      }), '$0.01 / month');
+      })).toEqual('$0.01 / month');
     });
 
     it('returns Free if the due now is free and the coupon is forever', function() {
-      assert.equal(totalLineOne({
+      expect(totalLineOne({
         quantity: 1,
         purchasableType: 'bundle',
         coupon: {amountOffInCents: 2, duration: 'forever'},
         priceInCents: 2
-      }), 'Free');
+      })).toEqual('Free');
     });
   });
 
   describe('with a non-bundle', function() {
     it('returns the formatted price', function() {
-      assert.equal(totalLineOne({
+      expect(totalLineOne({
         quantity: 1,
         priceInCents: 200000
-      }), '$2,000.00');
+      })).toEqual('$2,000.00');
     });
 
     it('returns Free if the due now is free', function() {
-      assert.equal(totalLineOne({
+      expect(totalLineOne({
         quantity: 1,
         coupon: {amountOffInCents: 2},
         priceInCents: 2
-      }), 'Free');
+      })).toEqual('Free');
     });
   });
 });
@@ -155,143 +158,143 @@ describe('totalLineOne', function() {
 describe('totalLineTwo', function() {
   describe('with a bundle', function() {
     it('returns null if there is no coupon', function() {
-      assert.equal(totalLineTwo({
+      expect(totalLineTwo({
         quantity: 1,
         purchasableType: 'bundle',
         priceInCents: 2
-      }), null);
+      })).toBeNull();
     });
 
     it('returns the total recurring with the interval if there is a non-forever coupon', function() {
-      assert.equal(totalLineTwo({
+      expect(totalLineTwo({
         quantity: 1,
         purchasableType: 'bundle',
         interval: 'month',
         coupon: {amountOffInCents: 4, duration: 'once'},
         priceInCents: 6
-      }), '$0.06 / month');
+      })).toEqual('$0.06 / month');
     });
 
     it('returns the total recurring while taking quantity into account', function() {
-      assert.equal(totalLineTwo({
+      expect(totalLineTwo({
         quantity: 10,
         purchasableType: 'bundle',
         interval: 'month',
         coupon: {amountOffInCents: 4, duration: 'once'},
         priceInCents: 6
-      }), '$0.60 / month');
+      })).toEqual('$0.60 / month');
     });
 
     it('returns an alternate currency symbol', function() {
-      assert.equal(totalLineTwo({
+      expect(totalLineTwo({
         quantity: 1,
         purchasableType: 'bundle',
         interval: 'month',
         coupon: {amountOffInCents: 4, duration: 'once'},
         priceInCents: 6
-      }, '£'), '£0.06 / month');
+      }, '£')).toEqual('£0.06 / month');
     });
 
 
     it('returns null if there is a forever coupon', function() {
-      assert.equal(totalLineTwo({
+      expect(totalLineTwo({
         quantity: 1,
         purchasableType: 'bundle',
         interval: 'month',
         coupon: {amountOffInCents: 4, duration: 'forever'},
         priceInCents: 6
-      }), null);
+      })).toBeNull();
     });
   });
 
   describe('with a non-bundle', function() {
     it('returns null', function() {
-      assert.equal(totalLineTwo({
+      expect(totalLineTwo({
         quantity: 1,
         priceInCents: 2
-      }), null);
+      })).toBeNull();
     });
   });
 });
 
 describe('totalDescription', function() {
   it('returns line one and two if they are both set', function() {
-    assert.equal(totalDescription({
+    expect(totalDescription({
       quantity: 1,
       purchasableType: 'bundle',
       interval: 'month',
       coupon: {amountOffInCents: 4, duration: 'once'},
       priceInCents: 6
-    }), '$0.02 for the first month, then $0.06 / month');
+    })).toEqual('$0.02 for the first month, then $0.06 / month');
   });
 
   it('returns an alternate currency symbol', function() {
-    assert.equal(totalDescription({
+    expect(totalDescription({
       quantity: 1,
       purchasableType: 'bundle',
       interval: 'month',
       coupon: {amountOffInCents: 4, duration: 'once'},
       priceInCents: 6
-    }, '£'), '£0.02 for the first month, then £0.06 / month');
+    }, '£')).toEqual('£0.02 for the first month, then £0.06 / month');
   });
 
   it('returns just line one if line two is not set', function() {
-    assert.equal(totalDescription({
+    expect(totalDescription({
       quantity: 1,
       purchasableType: 'bundle',
       interval: 'month',
       coupon: {amountOffInCents: 4, duration: 'forever'},
       priceInCents: 6
-    }), '$0.02 / month');
+    })).toEqual('$0.02 / month');
   });
 });
 
 describe('discountable', function() {
   it('prefers percentOff to amountOffInCents when both are given', function() {
-    assert.equal(discountable(10, 50, 7), 5);
+    expect(discountable(10, 50, 7)).toEqual(5);
   });
 
   it('defaults to zero if not provided an amountOffInCents or percentOff', function() {
-    assert.equal(discountable(10), 10);
+    expect(discountable(10)).toEqual(10);
   });
 
   describe('amountOffInCents', function() {
     it('calculates correctly', function() {
-      assert.equal(discountable(10, null, 7), 3);
+      expect(discountable(10, undefined, 7)).toEqual(3);
     });
 
     it('handles floats', function() {
-      assert.equal(discountable(10, null, 5.5), 4.5);
+      expect(discountable(10, undefined, 5.5)).toEqual(4.5);
     });
 
     it('will not go below zero', function() {
-      assert.equal(discountable(10, null, 11), 0);
+      expect(discountable(10, undefined, 11)).toEqual(0);
     });
 
     it('ignores negatives', function() {
-      assert.equal(discountable(10, null, -3), 7);
+      expect(discountable(10, undefined, -3)).toEqual(7);
     });
   });
 
   describe('percentOff', function() {
     it('calculates correctly', function() {
-      assert.equal(discountable(10, 10), 9);
+      expect(discountable(10, 10)).toEqual(9);
     });
 
     it('handles floats', function() {
-      assert.equal(discountable(10, 10.5), 8.95);
+      expect(discountable(10, 10.5)).toEqual(8.95);
     });
 
     it('calculates 100% off correctly', function() {
-      assert.equal(discountable(10, 100), 0);
+      expect(discountable(10, 100)).toEqual(0);
     });
 
     it('calculates > 100% off correctly', function() {
-      assert.equal(discountable(10, 200), 0);
+      expect(discountable(10, 200)).toEqual(0);
     });
 
     it('ignores negatives', function() {
-      assert.equal(discountable(10, -50), 5);
+      expect(discountable(10, -50)).toEqual(5);
     });
   });
 });
