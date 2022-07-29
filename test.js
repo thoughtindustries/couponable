@@ -31,13 +31,21 @@ describe('totalDueNow', function() {
     }), 1);
   });
 
-  it('handles coupons for bundles correctly', function() {
+  it('handles coupons for bundles & bulk purchases correctly', function() {
     assert.equal(totalDueNow({
       quantity: 10,
       coupon: {amountOffInCents: 5},
       priceInCents: 10,
       purchasableType: 'bundle'
-    }), 95)
+    }), 95);
+
+    assert.equal(totalDueNow({
+      quantity: 10,
+      coupon: {amountOffInCents: 5},
+      priceInCents: 10,
+      purchasableType: 'course',
+      isBulkPurchase: true
+    }), 95);
   });
 });
 

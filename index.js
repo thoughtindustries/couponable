@@ -39,7 +39,7 @@ function totalDueNow(orderItem) {
     }
 
     if (orderItem.coupon) {
-      if (orderItem.purchasableType === 'bundle' && quantity > 1) {
+      if ((orderItem.purchasableType === 'bundle' || orderItem.isBulkPurchase) && quantity > 1) {
         total = total * quantity;
         quantity = 1;
       }
