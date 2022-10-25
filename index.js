@@ -33,6 +33,7 @@ function totalDueNow(orderItem) {
   } else {
     var quantity = orderItem.quantity || 0,
         total = orderItem.priceInCents;
+    let totalAmountOffInCents;
 
     if (orderItem.variation) {
       total += orderItem.variation.priceInCents || 0;
@@ -41,9 +42,14 @@ function totalDueNow(orderItem) {
     if (orderItem.coupon) {
       if ((orderItem.purchasableType === 'bundle' || orderItem.isBulkPurchase) && quantity > 1) {
         total = total * quantity;
+
+        if (orderItem.isBulkPurchase && orderItem.coupon.amountOffInCents) {
+          totalAmountOffInCents = orderItem.coupon.amountOffInCents * quantity
+        }
+
         quantity = 1;
       }
-      total = Math.round(discountable(total, orderItem.coupon.percentOff, orderItem.coupon.amountOffInCents));
+      total = Math.round(discountable(total, orderItem.coupon.percentOff, totalAmountOffInCents || orderItem.coupon.amountOffInCents));
     }
 
     return total * quantity;
