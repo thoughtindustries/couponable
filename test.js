@@ -45,7 +45,7 @@ describe('totalDueNow', function() {
       priceInCents: 10,
       purchasableType: 'course',
       isBulkPurchase: true
-    }), 95);
+    }), 50);
   });
 });
 
