@@ -159,7 +159,6 @@ function totalLineTwo(orderItem, currencySymbol) {
 
 function totalLineTwoMulticurrency(orderItem, currencyCode, currencySymbol) {
   if (orderItem.purchasableType === 'bundle' && !orderItem.gift && orderItem.coupon && orderItem.coupon.duration !== 'forever') {
-    console.log('here');
     return priceFormatMultiCurrency(totalRecurringMulticurrency(orderItem), currencyCode, currencySymbol) + ' / ' + orderItem.interval;
   } else {
     return null;
@@ -193,11 +192,9 @@ function totalRecurring(orderItem) {
 function totalRecurringMulticurrency(orderItem) {
   if (orderItem.purchasableType === 'bundle') {
     if (orderItem.coupon && orderItem.coupon.duration === 'forever') {
-      console.log('forever');
       // 'due now' discount applies forever
       return totalDueNowMulticurrency(orderItem);
     } else {
-      console.log('orderItem :>> ', orderItem);
       return (orderItem.price?.unitAmount || 0) * (orderItem.quantity || 1);
     }
   } else {
