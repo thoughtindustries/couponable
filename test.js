@@ -237,8 +237,7 @@ describe('totalLineOneMulticurrency', function() {
             unitAmount: 200000
           }
         },
-        'usd',
-        '$'
+        'usd'
       ), '$2,000.00');
     });
     
@@ -250,8 +249,7 @@ describe('totalLineOneMulticurrency', function() {
             unitAmount: 4505
           }
         },
-        'jpy',
-        '¥'
+        'jpy'
       ), '¥4,505');
     });
 
@@ -263,8 +261,7 @@ describe('totalLineOneMulticurrency', function() {
             unitAmount: 350002
           }
         },
-        'eur',
-        '€'
+        'eur'
       ), '€3,500.02');
     });
 
@@ -277,8 +274,7 @@ describe('totalLineOneMulticurrency', function() {
             unitAmount: 2
           }
         },
-        'usd',
-        '$'
+        'usd'
       ), 'Free');
     });
   });
@@ -393,8 +389,7 @@ describe('totalLineTwoMulticurrency', function() {
             unitAmount: 6
           }
         }, 
-        'gbp',
-        '£'), '£0.06 / month');
+        'gbp'), '£0.06 / month');
     });
 
 

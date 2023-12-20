@@ -5,9 +5,8 @@ function priceFormat(amountInCents, currencySymbol) {
   return currencySymbol + (amountInCents / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-function priceFormatMultiCurrency(unitAmount, currencyCode, currencySymbol) {
+function priceFormatMultiCurrency(unitAmount, currencyCode) {
   currencyCode = currencyCode || 'usd';
-  currencySymbol = currencySymbol || '$';
   const intlFormat = new Intl.NumberFormat(undefined, {
     currency: currencyCode,
     style: 'currency'
@@ -17,12 +16,7 @@ function priceFormatMultiCurrency(unitAmount, currencyCode, currencySymbol) {
 
   const formattedAmount = unitAmount / (10 ** currencyDecimalPlaces);
 
-  //add comma and decimal separators
-  const withSeparatorsAmount = intlFormat.format(formattedAmount);
-  //remove leading prefix
-  const withoutPrefixAmount = withSeparatorsAmount.replace(/^[^\d]*/g, '');
-  //add currency symbol
-  return `${currencySymbol}${withoutPrefixAmount}`;
+  return intlFormat.format(formattedAmount);
 }
 
 function discountable(amountInCents, percentOff, amountOffInCents) {
@@ -127,12 +121,12 @@ function totalLineOne(orderItem, currencySymbol) {
   }
 }
 
-function totalLineOneMulticurrency(orderItem, currencyCode, currencySymbol) {
+function totalLineOneMulticurrency(orderItem, currencyCode) {
   let total, totalWithInterval;
   if (totalDueNowMulticurrency(orderItem) === 0) {
     total = totalWithInterval = 'Free';
   } else {
-    total = priceFormatMultiCurrency(totalDueNowMulticurrency(orderItem), currencyCode, currencySymbol);
+    total = priceFormatMultiCurrency(totalDueNowMulticurrency(orderItem), currencyCode);
     totalWithInterval = total + ' / ' + orderItem.interval;
   }
 
@@ -157,9 +151,9 @@ function totalLineTwo(orderItem, currencySymbol) {
   }
 }
 
-function totalLineTwoMulticurrency(orderItem, currencyCode, currencySymbol) {
+function totalLineTwoMulticurrency(orderItem, currencyCode) {
   if (orderItem.purchasableType === 'bundle' && !orderItem.gift && orderItem.coupon && orderItem.coupon.duration !== 'forever') {
-    return priceFormatMultiCurrency(totalRecurringMulticurrency(orderItem), currencyCode, currencySymbol) + ' / ' + orderItem.interval;
+    return priceFormatMultiCurrency(totalRecurringMulticurrency(orderItem), currencyCode) + ' / ' + orderItem.interval;
   } else {
     return null;
   }
