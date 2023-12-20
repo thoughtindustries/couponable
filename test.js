@@ -2,9 +2,13 @@ var couponable = require('.');
 
 var discountable = couponable.discountable;
 var totalDueNow = couponable.totalDueNow;
+var totalDueNowMulticurrency = couponable.totalDueNowMulticurrency;
 var totalRecurring = couponable.totalRecurring;
+var totalRecurringMulticurrency = couponable.totalRecurringMulticurrency;
 var totalLineOne = couponable.totalLineOne;
+var totalLineOneMulticurrency = couponable.totalLineOneMulticurrency;
 var totalLineTwo = couponable.totalLineTwo;
+var totalLineTwoMulticurrency = couponable.totalLineTwoMulticurrency;
 var totalDescription = couponable.totalDescription;
 var assert = require('assert');
 
@@ -49,6 +53,55 @@ describe('totalDueNow', function() {
   });
 });
 
+describe('totalDueNowMulticurrency', function() {
+  it('calculates correctly mc', function() {
+    assert.equal(totalDueNowMulticurrency({
+      quantity: 2,
+      variation: { priceInCents: 2 },
+      price: { 
+        unitAmount: 2
+      }
+    }), 8);
+  });
+
+  it('calculates correctly when a total is provided', function() {
+    assert.equal(totalDueNowMulticurrency({
+      total: 8
+    }), 8);
+  });
+
+  it('handles coupons correctly', function() {
+    assert.equal(totalDueNowMulticurrency({
+      quantity: 1,
+      coupon: { percentOff: 50 },
+      price: { 
+        unitAmount: 2
+      }
+    }), 1);
+  });
+
+  it('handles coupons for bundles & bulk purchases correctly', function() {
+    assert.equal(totalDueNowMulticurrency({
+      quantity: 10,
+      coupon: { amountOffInCents: 5 },
+      price: { 
+        unitAmount: 10
+      },
+      purchasableType: 'bundle'
+    }), 95);
+
+    assert.equal(totalDueNowMulticurrency({
+      quantity: 10,
+      coupon: { amountOffInCents: 5 },
+      price: { 
+        unitAmount: 10
+      },
+      purchasableType: 'course',
+      isBulkPurchase: true
+    }), 50);
+  });
+});
+
 describe('totalRecurring', function() {
   it('returns null for non-bundles', function() {
     assert.equal(totalRecurring({purchasableType: 'course'}), null);
@@ -60,6 +113,20 @@ describe('totalRecurring', function() {
 
   it('returns totalDueNow for bundles with forever coupons', function() {
     assert.equal(totalRecurring({purchasableType: 'bundle', priceInCents: 2, quantity: 1, coupon: {duration: 'forever', percentOff: 50}}), 1);
+  });
+});
+
+describe('totalRecurringMulticurrency', function() {
+  it('returns null for non-bundles', function() {
+    assert.equal(totalRecurringMulticurrency({ purchasableType: 'course' }), null);
+  });
+
+  it('returns priceInCents for bundles without coupons', function() {
+    assert.equal(totalRecurringMulticurrency({ purchasableType: 'bundle', price: { unitAmount: 2 } }), 2);
+  });
+
+  it('returns totalDueNow for bundles with forever coupons', function() {
+    assert.equal(totalRecurringMulticurrency({ purchasableType: 'bundle', price: { unitAmount: 2 }, quantity: 1, coupon: {duration: 'forever', percentOff: 50} }), 1);
   });
 });
 
@@ -160,6 +227,63 @@ describe('totalLineOne', function() {
   });
 });
 
+describe('totalLineOneMulticurrency', function() {
+  describe('with a non-bundle', function() {
+    it('returns the formatted price in usd', function() {
+      assert.equal(totalLineOneMulticurrency(
+        {
+          quantity: 1,
+          price: {
+            unitAmount: 200000
+          }
+        },
+        'usd',
+        '$'
+      ), '$2,000.00');
+    });
+    
+    it('returns the formatted price in yen', function() {
+      assert.equal(totalLineOneMulticurrency(
+        {
+          quantity: 1,
+          price: {
+            unitAmount: 4505
+          }
+        },
+        'jpy',
+        '¥'
+      ), '¥4,505');
+    });
+
+    it('returns the formatted price in euro', function() {
+      assert.equal(totalLineOneMulticurrency(
+        {
+          quantity: 1,
+          price: {
+            unitAmount: 350002
+          }
+        },
+        'eur',
+        '€'
+      ), '€3,500.02');
+    });
+
+    it('returns Free if the due now is free', function() {
+      assert.equal(totalLineOneMulticurrency(
+        {
+          quantity: 1,
+          coupon: { amountOffInCents: 2 },
+          price: {
+            unitAmount: 2
+          }
+        },
+        'usd',
+        '$'
+      ), 'Free');
+    });
+  });
+});
+
 describe('totalLineTwo', function() {
   describe('with a bundle', function() {
     it('returns null if there is no coupon', function() {
@@ -217,6 +341,83 @@ describe('totalLineTwo', function() {
       assert.equal(totalLineTwo({
         quantity: 1,
         priceInCents: 2
+      }), null);
+    });
+  });
+});
+
+describe('totalLineTwoMulticurrency', function() {
+  describe('with a bundle', function() {
+    it('returns null if there is no coupon', function() {
+      assert.equal(totalLineTwoMulticurrency({
+        quantity: 1,
+        purchasableType: 'bundle',
+        price: {
+          unitAmount: 2
+        }
+      }), null);
+    });
+
+    it('returns the total recurring with the interval if there is a non-forever coupon', function() {
+      assert.equal(totalLineTwoMulticurrency({
+        quantity: 1,
+        purchasableType: 'bundle',
+        interval: 'month',
+        coupon: { amountOffInCents: 4, duration: 'once' },
+        price: {
+          unitAmount: 6
+        }
+      }), '$0.06 / month');
+    });
+
+    it('returns the total recurring while taking quantity into account', function() {
+      assert.equal(totalLineTwoMulticurrency({
+        quantity: 10,
+        purchasableType: 'bundle',
+        interval: 'month',
+        coupon: {amountOffInCents: 4, duration: 'once'},
+        price: {
+          unitAmount: 6
+        }
+      }), '$0.60 / month');
+    });
+
+    it('returns an alternate currency symbol', function() {
+      assert.equal(totalLineTwoMulticurrency(
+        {
+          quantity: 1,
+          purchasableType: 'bundle',
+          interval: 'month',
+          coupon: {amountOffInCents: 4, duration: 'once'},
+          price: {
+            unitAmount: 6
+          }
+        }, 
+        'gbp',
+        '£'), '£0.06 / month');
+    });
+
+
+    it('returns null if there is a forever coupon', function() {
+      assert.equal(totalLineTwoMulticurrency({
+        quantity: 1,
+        purchasableType: 'bundle',
+        interval: 'month',
+        coupon: {amountOffInCents: 4, duration: 'forever'},
+        price: {
+          unitAmount: 6
+        }
+      }), null);
+    });
+  });
+
+  describe('with a non-bundle', function() {
+    it('returns null', function() {
+      assert.equal(totalLineTwoMulticurrency({
+        quantity: 1,
+        price: {
+          unitAmount: 2
+        }
       }), null);
     });
   });
