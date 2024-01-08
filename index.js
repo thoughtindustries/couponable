@@ -5,6 +5,20 @@ function priceFormat(amountInCents, currencySymbol) {
   return currencySymbol + (amountInCents / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
+function priceFormatMultiCurrency(unitAmount, currencyCode) {
+  currencyCode = currencyCode || 'usd';
+  const intlFormat = new Intl.NumberFormat(undefined, {
+    currency: currencyCode,
+    style: 'currency'
+  });
+
+  const { minimumFractionDigits: currencyDecimalPlaces } = intlFormat.resolvedOptions();
+
+  const formattedAmount = unitAmount / (10 ** currencyDecimalPlaces);
+
+  return intlFormat.format(formattedAmount);
+}
+
 function discountable(amountInCents, percentOff, amountOffInCents) {
   var discount, appliedDiscount;
 
@@ -56,6 +70,34 @@ function totalDueNow(orderItem) {
   }
 }
 
+function totalDueNowMulticurrency(orderItem) {
+  if (orderItem.total) {
+    return orderItem.total;
+  } else {
+    let quantity = orderItem.quantity || 0,
+        total = orderItem.price.unitAmount;
+    let totalUnitAmountOff;
+
+    if (orderItem.variation) {
+      total += (orderItem.variation.unitAmount || orderItem.variation.priceInCents || 0);
+    }
+
+    if (orderItem.coupon) {
+      if ((orderItem.purchasableType === 'bundle' || orderItem.isBulkPurchase) && quantity > 1) {
+        total = total * quantity;
+
+        if (orderItem.isBulkPurchase && orderItem.coupon.amountOffInCents) {
+          totalUnitAmountOff = orderItem.coupon.amountOffInCents * quantity
+        }
+
+        quantity = 1;
+      }
+      total = Math.round(discountable(total, orderItem.coupon.percentOff, totalUnitAmountOff || orderItem.coupon.amountOffInCents));
+    }
+    return total * quantity;
+  }
+}
+
 // TODO: figure out i18n story here
 function totalLineOne(orderItem, currencySymbol) {
   var total, totalWithInterval;
@@ -79,9 +121,39 @@ function totalLineOne(orderItem, currencySymbol) {
   }
 }
 
+function totalLineOneMulticurrency(orderItem, currencyCode) {
+  let total, totalWithInterval;
+  if (totalDueNowMulticurrency(orderItem) === 0) {
+    total = totalWithInterval = 'Free';
+  } else {
+    total = priceFormatMultiCurrency(totalDueNowMulticurrency(orderItem), currencyCode);
+    totalWithInterval = total + ' / ' + orderItem.interval;
+  }
+
+  if (orderItem.purchasableType === 'bundle' && !orderItem.gift) {
+    if (orderItem.coupon && orderItem.coupon.duration === 'repeating') {
+      return totalWithInterval + ' for the first ' + orderItem.coupon.durationInMonths + ' months';
+    } else if (orderItem.coupon && orderItem.coupon.duration === 'once') {
+      return total + ' for the first ' + orderItem.interval;
+    } else {
+      return totalWithInterval;
+    }
+  } else {
+    return total;
+  }
+}
+
 function totalLineTwo(orderItem, currencySymbol) {
   if (orderItem.purchasableType === 'bundle' && !orderItem.gift && orderItem.coupon && orderItem.coupon.duration !== 'forever') {
     return priceFormat(totalRecurring(orderItem), currencySymbol) + ' / ' + orderItem.interval;
+  } else {
+    return null;
+  }
+}
+
+function totalLineTwoMulticurrency(orderItem, currencyCode) {
+  if (orderItem.purchasableType === 'bundle' && !orderItem.gift && orderItem.coupon && orderItem.coupon.duration !== 'forever') {
+    return priceFormatMultiCurrency(totalRecurringMulticurrency(orderItem), currencyCode) + ' / ' + orderItem.interval;
   } else {
     return null;
   }
@@ -111,13 +183,30 @@ function totalRecurring(orderItem) {
   }
 }
 
+function totalRecurringMulticurrency(orderItem) {
+  if (orderItem.purchasableType === 'bundle') {
+    if (orderItem.coupon && orderItem.coupon.duration === 'forever') {
+      // 'due now' discount applies forever
+      return totalDueNowMulticurrency(orderItem);
+    } else {
+      return (orderItem.price?.unitAmount || 0) * (orderItem.quantity || 1);
+    }
+  } else {
+    return null;
+  }
+}
+
 var couponable = {
   discountable: discountable,
   totalLineOne: totalLineOne,
+  totalLineOneMulticurrency: totalLineOneMulticurrency,
   totalLineTwo: totalLineTwo,
+  totalLineTwoMulticurrency: totalLineTwoMulticurrency,
   totalDescription: totalDescription,
   totalDueNow: totalDueNow,
-  totalRecurring: totalRecurring
+  totalDueNowMulticurrency: totalDueNowMulticurrency,
+  totalRecurring: totalRecurring,
+  totalRecurringMulticurrency: totalRecurringMulticurrency
 };
 
 if (typeof module !== 'undefined' && module.exports) {
