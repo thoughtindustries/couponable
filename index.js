@@ -14,7 +14,7 @@ function priceFormatMultiCurrency(unitAmount, currencyCode) {
 
   const { minimumFractionDigits: currencyDecimalPlaces } = intlFormat.resolvedOptions();
 
-  const formattedAmount = unitAmount / (10 ** currencyDecimalPlaces);
+  const formattedAmount = unitAmount / 10 ** currencyDecimalPlaces;
 
   return intlFormat.format(formattedAmount);
 }
@@ -23,7 +23,7 @@ function discountable(amountInCents, percentOff, amountOffInCents) {
   var discount, appliedDiscount;
 
   if (percentOff) {
-    discount = amountInCents * percentOff / 100;
+    discount = (amountInCents * percentOff) / 100;
   } else if (amountOffInCents) {
     discount = amountOffInCents;
   } else {
@@ -46,7 +46,7 @@ function totalDueNow(orderItem) {
     return orderItem.total;
   } else {
     var quantity = orderItem.quantity || 0,
-        total = orderItem.priceInCents;
+      total = orderItem.priceInCents;
     let totalAmountOffInCents;
 
     if (orderItem.variation) {
@@ -58,12 +58,18 @@ function totalDueNow(orderItem) {
         total = total * quantity;
 
         if (orderItem.isBulkPurchase && orderItem.coupon.amountOffInCents) {
-          totalAmountOffInCents = orderItem.coupon.amountOffInCents * quantity
+          totalAmountOffInCents = orderItem.coupon.amountOffInCents * quantity;
         }
 
         quantity = 1;
       }
-      total = Math.round(discountable(total, orderItem.coupon.percentOff, totalAmountOffInCents || orderItem.coupon.amountOffInCents));
+      total = Math.round(
+        discountable(
+          total,
+          orderItem.coupon.percentOff,
+          totalAmountOffInCents || orderItem.coupon.amountOffInCents
+        )
+      );
     }
 
     return total * quantity;
@@ -74,12 +80,24 @@ function totalDueNowMulticurrency(orderItem) {
   if (orderItem.total) {
     return orderItem.total;
   } else {
-    let quantity = orderItem.quantity || 0,
-        total = orderItem.price.unitAmount;
+    let quantity = orderItem.quantity || 0;
+    let total;
+    if (orderItem.purchasableType === 'pickableGroup') {
+      total =
+        orderItem.price.unitsAmount[orderItem.learningPaths.length + orderItem.courses.length - 1];
+    } else if (orderItem.purchasableType === 'bundle') {
+      total =
+        orderItem.interval === 'year'
+          ? orderItem.price.annualUnitAmount
+          : orderItem.price.unitAmount;
+    } else {
+      total = orderItem.price.unitAmount;
+    }
+
     let totalUnitAmountOff;
 
     if (orderItem.variation) {
-      total += (orderItem.variation.unitAmount || orderItem.variation.priceInCents || 0);
+      total += orderItem.variation.unitAmount || orderItem.variation.priceInCents || 0;
     }
 
     if (orderItem.coupon) {
@@ -87,12 +105,18 @@ function totalDueNowMulticurrency(orderItem) {
         total = total * quantity;
 
         if (orderItem.isBulkPurchase && orderItem.coupon.amountOffInCents) {
-          totalUnitAmountOff = orderItem.coupon.amountOffInCents * quantity
+          totalUnitAmountOff = orderItem.coupon.amountOffInCents * quantity;
         }
 
         quantity = 1;
       }
-      total = Math.round(discountable(total, orderItem.coupon.percentOff, totalUnitAmountOff || orderItem.coupon.amountOffInCents));
+      total = Math.round(
+        discountable(
+          total,
+          orderItem.coupon.percentOff,
+          totalUnitAmountOff || orderItem.coupon.amountOffInCents
+        )
+      );
     }
     return total * quantity;
   }
@@ -144,7 +168,12 @@ function totalLineOneMulticurrency(orderItem, currencyCode) {
 }
 
 function totalLineTwo(orderItem, currencySymbol) {
-  if (orderItem.purchasableType === 'bundle' && !orderItem.gift && orderItem.coupon && orderItem.coupon.duration !== 'forever') {
+  if (
+    orderItem.purchasableType === 'bundle' &&
+    !orderItem.gift &&
+    orderItem.coupon &&
+    orderItem.coupon.duration !== 'forever'
+  ) {
     return priceFormat(totalRecurring(orderItem), currencySymbol) + ' / ' + orderItem.interval;
   } else {
     return null;
@@ -152,8 +181,17 @@ function totalLineTwo(orderItem, currencySymbol) {
 }
 
 function totalLineTwoMulticurrency(orderItem, currencyCode) {
-  if (orderItem.purchasableType === 'bundle' && !orderItem.gift && orderItem.coupon && orderItem.coupon.duration !== 'forever') {
-    return priceFormatMultiCurrency(totalRecurringMulticurrency(orderItem), currencyCode) + ' / ' + orderItem.interval;
+  if (
+    orderItem.purchasableType === 'bundle' &&
+    !orderItem.gift &&
+    orderItem.coupon &&
+    orderItem.coupon.duration !== 'forever'
+  ) {
+    return (
+      priceFormatMultiCurrency(totalRecurringMulticurrency(orderItem), currencyCode) +
+      ' / ' +
+      orderItem.interval
+    );
   } else {
     return null;
   }
@@ -212,5 +250,7 @@ var couponable = {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = couponable;
 } else {
-  define('couponable', ['exports'], function (__exports__) { __exports__['default'] = couponable; });
+  define('couponable', ['exports'], function (__exports__) {
+    __exports__['default'] = couponable;
+  });
 }
