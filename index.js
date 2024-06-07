@@ -6,7 +6,7 @@ function priceFormat(amountInCents, currencySymbol) {
 }
 
 function priceFormatMultiCurrency(unitAmount, currencyCode, locale) {
-  currencyCode = currencyCode || 'usd';
+  currencyCode = currencyCode || 'USD';
   locale = locale.replace('_', '-');
   const intlFormat = new Intl.NumberFormat(locale, {
     currency: currencyCode,
