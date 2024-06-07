@@ -75,7 +75,8 @@ describe('totalDueNowMulticurrency', function () {
         quantity: 2,
         variation: { priceInCents: 2 },
         price: {
-          unitAmount: 2
+          unitAmount: 2,
+          locale: 'en_US'
         }
       }),
       8
@@ -122,7 +123,8 @@ describe('totalDueNowMulticurrency', function () {
         quantity: 10,
         coupon: { amountOffInCents: 5 },
         price: {
-          unitAmount: 10
+          unitAmount: 10,
+          locale: 'en_US'
         },
         purchasableType: 'course',
         isBulkPurchase: true
@@ -139,7 +141,8 @@ describe('totalDueNowMulticurrency', function () {
         learningPaths: ['lp-1'],
         courses: ['course-1'],
         price: {
-          unitsAmount: [500, 600]
+          unitsAmount: [500, 600],
+          locale: 'en_US'
         },
         purchasableType: 'pickableGroup'
       }),
@@ -152,7 +155,8 @@ describe('totalDueNowMulticurrency', function () {
         learningPaths: ['lp-1'],
         courses: [],
         price: {
-          unitsAmount: [500, 600]
+          unitsAmount: [500, 600],
+          locale: 'en_US'
         },
         purchasableType: 'pickableGroup'
       }),
@@ -167,7 +171,8 @@ describe('totalDueNowMulticurrency', function () {
         interval: 'year',
         price: {
           annualUnitAmount: 10000,
-          unitAmount: 400
+          unitAmount: 400,
+          locale: 'en_US'
         },
         purchasableType: 'bundle'
       }),
@@ -361,7 +366,8 @@ describe('totalLineOneMulticurrency', function () {
           {
             quantity: 1,
             price: {
-              unitAmount: 200000
+              unitAmount: 200000,
+              locale: 'en_US'
             }
           },
           'usd'
@@ -376,12 +382,13 @@ describe('totalLineOneMulticurrency', function () {
           {
             quantity: 1,
             price: {
-              unitAmount: 4505
+              unitAmount: 4505,
+              locale: 'ja_JP'
             }
           },
           'jpy'
         ),
-        '¥4,505'
+        '￥4,505'
       );
     });
 
@@ -391,12 +398,14 @@ describe('totalLineOneMulticurrency', function () {
           {
             quantity: 1,
             price: {
-              unitAmount: 350002
+              unitAmount: 350002,
+              locale: 'de_AT'
             }
           },
           'eur'
         ),
-        '€3,500.02'
+        // space is character U+00a0
+        '€ 3.500,02'
       );
     });
 
@@ -407,7 +416,8 @@ describe('totalLineOneMulticurrency', function () {
             quantity: 1,
             coupon: { amountOffInCents: 2 },
             price: {
-              unitAmount: 2
+              unitAmount: 2,
+              locale: 'en_US'
             }
           },
           'usd'
@@ -523,7 +533,8 @@ describe('totalLineTwoMulticurrency', function () {
           interval: 'month',
           coupon: { amountOffInCents: 4, duration: 'once' },
           price: {
-            unitAmount: 6
+            unitAmount: 6,
+            locale: 'en_US'
           }
         }),
         '$0.06 / month'
@@ -538,7 +549,8 @@ describe('totalLineTwoMulticurrency', function () {
           interval: 'month',
           coupon: { amountOffInCents: 4, duration: 'once' },
           price: {
-            unitAmount: 6
+            unitAmount: 6,
+            locale: 'en_US'
           }
         }),
         '$0.60 / month'
@@ -554,7 +566,8 @@ describe('totalLineTwoMulticurrency', function () {
             interval: 'month',
             coupon: { amountOffInCents: 4, duration: 'once' },
             price: {
-              unitAmount: 6
+              unitAmount: 6,
+              locale: 'cy_GB'
             }
           },
           'gbp'

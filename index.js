@@ -5,9 +5,10 @@ function priceFormat(amountInCents, currencySymbol) {
   return currencySymbol + (amountInCents / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-function priceFormatMultiCurrency(unitAmount, currencyCode) {
+function priceFormatMultiCurrency(unitAmount, currencyCode, locale) {
   currencyCode = currencyCode || 'usd';
-  const intlFormat = new Intl.NumberFormat(undefined, {
+  locale = locale.replace('_', '-');
+  const intlFormat = new Intl.NumberFormat(locale, {
     currency: currencyCode,
     style: 'currency'
   });
@@ -150,7 +151,11 @@ function totalLineOneMulticurrency(orderItem, currencyCode) {
   if (totalDueNowMulticurrency(orderItem) === 0) {
     total = totalWithInterval = 'Free';
   } else {
-    total = priceFormatMultiCurrency(totalDueNowMulticurrency(orderItem), currencyCode);
+    total = priceFormatMultiCurrency(
+      totalDueNowMulticurrency(orderItem),
+      currencyCode,
+      orderItem.price.locale
+    );
     totalWithInterval = total + ' / ' + orderItem.interval;
   }
 
@@ -188,7 +193,11 @@ function totalLineTwoMulticurrency(orderItem, currencyCode) {
     orderItem.coupon.duration !== 'forever'
   ) {
     return (
-      priceFormatMultiCurrency(totalRecurringMulticurrency(orderItem), currencyCode) +
+      priceFormatMultiCurrency(
+        totalRecurringMulticurrency(orderItem),
+        currencyCode,
+        orderItem.price.locale
+      ) +
       ' / ' +
       orderItem.interval
     );
