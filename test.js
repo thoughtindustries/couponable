@@ -179,6 +179,38 @@ describe('totalDueNowMulticurrency', function () {
       10000
     );
   });
+
+  it('returns formatted price when using bulk purchasing', function () {
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: 10,
+        price: {
+          unitAmount: 1000,
+          locale: 'en_US',
+          unitsAmount: [120, 110]
+        },
+        isBulkPurchase: true,
+        purchasableType: 'pickableGroup',
+        courses: ['course-1']
+      }),
+      1000
+    );
+
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: 1,
+        price: {
+          unitAmount: 1000,
+          locale: 'en_US',
+          unitsAmount: [120, 110]
+        },
+        isBulkPurchase: false,
+        purchasableType: 'pickableGroup',
+        courses: ['course-1']
+      }),
+      120
+    );
+  });
 });
 
 describe('totalRecurring', function () {
