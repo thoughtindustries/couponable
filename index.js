@@ -83,7 +83,8 @@ function totalDueNowMulticurrency(orderItem) {
   } else {
     let quantity = orderItem.quantity || 0;
     let total;
-    if (orderItem.purchasableType === 'pickableGroup') {
+
+    if (orderItem.purchasableType === 'pickableGroup' && !orderItem.isBulkPurchase) {
       total =
         orderItem.price.unitsAmount[orderItem.learningPaths.length + orderItem.courses.length - 1];
     } else if (orderItem.purchasableType === 'bundle') {
