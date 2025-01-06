@@ -185,13 +185,14 @@ describe('totalDueNowMulticurrency', function () {
       totalDueNowMulticurrency({
         quantity: 10,
         price: {
-          unitAmount: 1000,
+          unitAmount: 100,
           locale: 'en_US',
           unitsAmount: [120, 110]
         },
         isBulkPurchase: true,
         purchasableType: 'pickableGroup',
-        courses: ['course-1']
+        courses: ['course-1'],
+        learningPaths: []
       }),
       1000
     );
@@ -200,13 +201,14 @@ describe('totalDueNowMulticurrency', function () {
       totalDueNowMulticurrency({
         quantity: 1,
         price: {
-          unitAmount: 1000,
+          unitAmount: 100,
           locale: 'en_US',
           unitsAmount: [120, 110]
         },
         isBulkPurchase: false,
         purchasableType: 'pickableGroup',
-        courses: ['course-1']
+        courses: ['course-1'],
+        learningPaths: []
       }),
       120
     );

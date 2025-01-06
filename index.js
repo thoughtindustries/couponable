@@ -83,18 +83,10 @@ function totalDueNowMulticurrency(orderItem) {
   } else {
     let quantity = orderItem.quantity || 0;
     let total;
-    if (orderItem.purchasableType === 'pickableGroup') {
-      if (orderItem.isBulkPurchase) {
-        // we set the unitAmount prior to this function call when we set the total for the orderItem
-        // in the case for bulk purchasing. This also applies for collections/courses/learning paths which is handled in the
-        // else statement outside of this if block.
-        total = orderItem.price.unitAmount;
-      } else {
-        total =
-          orderItem.price.unitsAmount[
-            orderItem.learningPaths.length + orderItem.courses.length - 1
-          ];
-      }
+
+    if (orderItem.purchasableType === 'pickableGroup' && !orderItem.isBulkPurchase) {
+      total =
+        orderItem.price.unitsAmount[orderItem.learningPaths.length + orderItem.courses.length - 1];
     } else if (orderItem.purchasableType === 'bundle') {
       total =
         orderItem.interval === 'year'
@@ -127,10 +119,6 @@ function totalDueNowMulticurrency(orderItem) {
           totalUnitAmountOff || orderItem.coupon.amountOffInCents
         )
       );
-    }
-
-    if (orderItem.isBulkPurchase) {
-      return total;
     }
     return total * quantity;
   }
