@@ -42,6 +42,47 @@ function discountable(amountInCents, percentOff, amountOffInCents) {
   }
 }
 
+function discountableMulticurrency(
+  amountInCents,
+  percentOff,
+  amountOffInCents,
+  multicurrencyAmountOff,
+  currencyCode
+) {
+  var discount, appliedDiscount;
+
+  if (percentOff) {
+    discount = (amountInCents * percentOff) / 100;
+  } else if (
+    multicurrencyAmountOff &&
+    currencyCode &&
+    multicurrencyAmountOff[currencyCode] !== null &&
+    multicurrencyAmountOff[currencyCode] !== undefined
+  ) {
+    // Use the specific currency amount from multicurrency data
+    // Note: These amounts are already in the correct minor units for each currency
+    // EUR: stored as cents (6700 = €67.00)
+    // KRW: stored as won (75 = ₩75, no minor units)
+    // USD: stored as cents (8900 = $89.00)
+    discount = multicurrencyAmountOff[currencyCode];
+  } else if (amountOffInCents) {
+    // Fall back to default currency amount
+    discount = amountOffInCents;
+  } else {
+    discount = 0;
+  }
+
+  discount = Math.abs(discount);
+
+  appliedDiscount = amountInCents - discount;
+
+  if (appliedDiscount <= 0) {
+    return 0;
+  } else {
+    return appliedDiscount;
+  }
+}
+
 function totalDueNow(orderItem) {
   if (orderItem.total) {
     return orderItem.total;
@@ -90,10 +131,10 @@ function totalDueNowMulticurrency(orderItem) {
     } else if (orderItem.purchasableType === 'bundle') {
       total =
         orderItem.interval === 'year'
-          ? orderItem.price.annualUnitAmount
-          : orderItem.price.unitAmount;
+          ? orderItem.price.annualUnitAmount || 0
+          : orderItem.price.unitAmount || 0;
     } else {
-      total = orderItem.price.unitAmount;
+      total = orderItem.price.unitAmount || 0;
     }
 
     let totalUnitAmountOff;
@@ -113,10 +154,12 @@ function totalDueNowMulticurrency(orderItem) {
         quantity = 1;
       }
       total = Math.round(
-        discountable(
+        discountableMulticurrency(
           total,
           orderItem.coupon.percentOff,
-          totalUnitAmountOff || orderItem.coupon.amountOffInCents
+          totalUnitAmountOff || orderItem.coupon.amountOffInCents,
+          orderItem.coupon.multicurrencyAmountOff,
+          orderItem.coupon.currencyCode
         )
       );
     }
@@ -246,6 +289,7 @@ function totalRecurringMulticurrency(orderItem) {
 
 var couponable = {
   discountable: discountable,
+  discountableMulticurrency: discountableMulticurrency,
   totalLineOne: totalLineOne,
   totalLineOneMulticurrency: totalLineOneMulticurrency,
   totalLineTwo: totalLineTwo,

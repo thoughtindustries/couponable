@@ -1,6 +1,7 @@
 var couponable = require('.');
 
 var discountable = couponable.discountable;
+var discountableMulticurrency = couponable.discountableMulticurrency;
 var totalDueNow = couponable.totalDueNow;
 var totalDueNowMulticurrency = couponable.totalDueNowMulticurrency;
 var totalRecurring = couponable.totalRecurring;
@@ -211,6 +212,242 @@ describe('totalDueNowMulticurrency', function () {
         learningPaths: []
       }),
       120
+    );
+  });
+
+  it('handles multicurrency coupons with specific currency amounts', function () {
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: 1,
+        coupon: {
+          multicurrencyAmountOff: { USD: 500, EUR: 400, KRW: 50000 },
+          currencyCode: 'USD'
+        },
+        price: {
+          unitAmount: 1000,
+          locale: 'en_US'
+        }
+      }),
+      500
+    );
+
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: 1,
+        coupon: {
+          multicurrencyAmountOff: { USD: 500, EUR: 400, KRW: 50000 },
+          currencyCode: 'EUR'
+        },
+        price: {
+          unitAmount: 1000,
+          locale: 'de_DE'
+        }
+      }),
+      600
+    );
+  });
+
+  it('handles multicurrency coupons with bulk purchases', function () {
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: 5,
+        coupon: {
+          multicurrencyAmountOff: { USD: 200, EUR: 150 },
+          currencyCode: 'USD',
+          amountOffInCents: 100 // fallback amount
+        },
+        price: {
+          unitAmount: 1000,
+          locale: 'en_US'
+        },
+        purchasableType: 'bundle',
+        isBulkPurchase: true
+      }),
+      4800 // (1000 * 5) - 200 = 5000 - 200 = 4800 (multicurrency amount is used, not amountOffInCents * quantity)
+    );
+  });
+
+  it('handles multicurrency coupons with percent off', function () {
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: 1,
+        coupon: {
+          percentOff: 25,
+          multicurrencyAmountOff: { USD: 500, EUR: 400 },
+          currencyCode: 'USD'
+        },
+        price: {
+          unitAmount: 1000,
+          locale: 'en_US'
+        }
+      }),
+      750 // percentOff takes precedence over multicurrency amount
+    );
+  });
+
+  it('falls back to amountOffInCents when multicurrency amount is not available', function () {
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: 1,
+        coupon: {
+          multicurrencyAmountOff: { USD: 500, EUR: 400 },
+          currencyCode: 'GBP', // not in multicurrency object
+          amountOffInCents: 300
+        },
+        price: {
+          unitAmount: 1000,
+          locale: 'en_GB'
+        }
+      }),
+      700 // 1000 - 300 = 700
+    );
+  });
+
+  it('handles edge cases with missing price data', function () {
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: 1,
+        price: {
+          // missing unitAmount
+          locale: 'en_US'
+        }
+      }),
+      0 // undefined * 1 = NaN, but the function should handle this
+    );
+
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: 1,
+        price: {
+          unitAmount: 1000
+          // missing locale
+        }
+      }),
+      1000
+    );
+  });
+
+  it('handles variation with unitAmount vs priceInCents', function () {
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: 1,
+        variation: { unitAmount: 200 },
+        price: {
+          unitAmount: 1000,
+          locale: 'en_US'
+        }
+      }),
+      1200
+    );
+
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: 1,
+        variation: { priceInCents: 200 }, // fallback to priceInCents
+        price: {
+          unitAmount: 1000,
+          locale: 'en_US'
+        }
+      }),
+      1200
+    );
+  });
+
+  it('handles complex pickable group scenarios', function () {
+    // Test with multiple learning paths and courses
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: 1,
+        learningPaths: ['lp-1', 'lp-2'],
+        courses: ['course-1', 'course-2', 'course-3'],
+        price: {
+          unitsAmount: [500, 600, 700, 800, 900], // 5 items total
+          locale: 'en_US'
+        },
+        purchasableType: 'pickableGroup'
+      }),
+      900 // unitsAmount[4] = 900 (index 4 for 2 LPs + 3 courses - 1)
+    );
+
+    // Test with only learning paths
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: 1,
+        learningPaths: ['lp-1', 'lp-2', 'lp-3'],
+        courses: [],
+        price: {
+          unitsAmount: [500, 600, 700, 800],
+          locale: 'en_US'
+        },
+        purchasableType: 'pickableGroup'
+      }),
+      700 // unitsAmount[2] = 700 (index 2 for 3 LPs + 0 courses - 1)
+    );
+  });
+
+  it('handles annual vs monthly bundle pricing', function () {
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: 1,
+        interval: 'year',
+        price: {
+          annualUnitAmount: 12000,
+          unitAmount: 1000,
+          locale: 'en_US'
+        },
+        purchasableType: 'bundle'
+      }),
+      12000
+    );
+
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: 1,
+        interval: 'month',
+        price: {
+          annualUnitAmount: 12000,
+          unitAmount: 1000,
+          locale: 'en_US'
+        },
+        purchasableType: 'bundle'
+      }),
+      1000
+    );
+  });
+
+  it('handles zero and negative quantities', function () {
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: 0,
+        price: {
+          unitAmount: 1000,
+          locale: 'en_US'
+        }
+      }),
+      0
+    );
+
+    assert.equal(
+      totalDueNowMulticurrency({
+        quantity: -1,
+        price: {
+          unitAmount: 1000,
+          locale: 'en_US'
+        }
+      }),
+      -1000
+    );
+  });
+
+  it('handles missing quantity (defaults to 0)', function () {
+    assert.equal(
+      totalDueNowMulticurrency({
+        price: {
+          unitAmount: 1000,
+          locale: 'en_US'
+        }
+      }),
+      0
     );
   });
 });
@@ -731,6 +968,129 @@ describe('discountable', function () {
 
     it('ignores negatives', function () {
       assert.equal(discountable(10, -50), 5);
+    });
+  });
+});
+
+describe('discountableMulticurrency', function () {
+  it('prefers percentOff to multicurrency amount when both are given', function () {
+    const multicurrencyAmountOff = { USD: 700, EUR: 600 };
+    assert.equal(discountableMulticurrency(1000, 50, null, multicurrencyAmountOff, 'USD'), 500);
+  });
+
+  it('uses multicurrency amount when currency code is provided and amount exists', function () {
+    const multicurrencyAmountOff = { USD: 700, EUR: 600, KRW: 75000 };
+    assert.equal(discountableMulticurrency(1000, null, null, multicurrencyAmountOff, 'USD'), 300);
+    assert.equal(discountableMulticurrency(1000, null, null, multicurrencyAmountOff, 'EUR'), 400);
+    assert.equal(
+      discountableMulticurrency(100000, null, null, multicurrencyAmountOff, 'KRW'),
+      25000
+    );
+  });
+
+  it('falls back to amountOffInCents when multicurrency amount is not available', function () {
+    const multicurrencyAmountOff = { USD: 700, EUR: 600 };
+    assert.equal(discountableMulticurrency(1000, null, 500, multicurrencyAmountOff, 'GBP'), 500);
+  });
+
+  it('falls back to amountOffInCents when multicurrency amount is null', function () {
+    const multicurrencyAmountOff = { USD: 700, EUR: null, KRW: undefined };
+    assert.equal(discountableMulticurrency(1000, null, 500, multicurrencyAmountOff, 'EUR'), 500);
+    assert.equal(discountableMulticurrency(1000, null, 500, multicurrencyAmountOff, 'KRW'), 500);
+  });
+
+  it('defaults to zero discount when no discount parameters are provided', function () {
+    assert.equal(discountableMulticurrency(1000), 1000);
+  });
+
+  it('defaults to zero discount when multicurrency object is empty', function () {
+    const multicurrencyAmountOff = {};
+    assert.equal(discountableMulticurrency(1000, null, null, multicurrencyAmountOff, 'USD'), 1000);
+  });
+
+  it('defaults to zero discount when multicurrency object is null', function () {
+    assert.equal(discountableMulticurrency(1000, null, null, null, 'USD'), 1000);
+  });
+
+  it('defaults to zero discount when currency code is not provided', function () {
+    const multicurrencyAmountOff = { USD: 700, EUR: 600 };
+    assert.equal(discountableMulticurrency(1000, null, null, multicurrencyAmountOff), 1000);
+  });
+
+  describe('multicurrency amount handling', function () {
+    it('handles different currency amounts correctly', function () {
+      const multicurrencyAmountOff = {
+        USD: 100, // $1.00 in cents
+        EUR: 150, // €1.50 in cents
+        KRW: 2000, // ₩2000 (no minor units)
+        JPY: 100 // ¥100 (no minor units)
+      };
+
+      assert.equal(discountableMulticurrency(500, null, null, multicurrencyAmountOff, 'USD'), 400);
+      assert.equal(discountableMulticurrency(500, null, null, multicurrencyAmountOff, 'EUR'), 350);
+      assert.equal(
+        discountableMulticurrency(5000, null, null, multicurrencyAmountOff, 'KRW'),
+        3000
+      );
+      assert.equal(discountableMulticurrency(500, null, null, multicurrencyAmountOff, 'JPY'), 400);
+    });
+
+    it('handles zero multicurrency amounts', function () {
+      const multicurrencyAmountOff = { USD: 0, EUR: 0 };
+      assert.equal(
+        discountableMulticurrency(1000, null, null, multicurrencyAmountOff, 'USD'),
+        1000
+      );
+      assert.equal(
+        discountableMulticurrency(1000, null, null, multicurrencyAmountOff, 'EUR'),
+        1000
+      );
+    });
+
+    it('will not go below zero with multicurrency amounts', function () {
+      const multicurrencyAmountOff = { USD: 1500, EUR: 1200 };
+      assert.equal(discountableMulticurrency(1000, null, null, multicurrencyAmountOff, 'USD'), 0);
+      assert.equal(discountableMulticurrency(1000, null, null, multicurrencyAmountOff, 'EUR'), 0);
+    });
+
+    it('ignores negative multicurrency amounts', function () {
+      const multicurrencyAmountOff = { USD: -300, EUR: -200 };
+      assert.equal(discountableMulticurrency(1000, null, null, multicurrencyAmountOff, 'USD'), 700);
+      assert.equal(discountableMulticurrency(1000, null, null, multicurrencyAmountOff, 'EUR'), 800);
+    });
+  });
+
+  describe('percentOff with multicurrency', function () {
+    it('calculates percent off correctly when multicurrency data is present', function () {
+      const multicurrencyAmountOff = { USD: 700, EUR: 600 };
+      assert.equal(discountableMulticurrency(1000, 25, null, multicurrencyAmountOff, 'USD'), 750);
+      assert.equal(discountableMulticurrency(1000, 25, null, multicurrencyAmountOff, 'EUR'), 750);
+    });
+
+    it('handles 100% off correctly', function () {
+      const multicurrencyAmountOff = { USD: 700, EUR: 600 };
+      assert.equal(discountableMulticurrency(1000, 100, null, multicurrencyAmountOff, 'USD'), 0);
+    });
+
+    it('handles > 100% off correctly', function () {
+      const multicurrencyAmountOff = { USD: 700, EUR: 600 };
+      assert.equal(discountableMulticurrency(1000, 150, null, multicurrencyAmountOff, 'USD'), 0);
+    });
+  });
+
+  describe('fallback behavior', function () {
+    it('falls back to amountOffInCents when currency code is missing from multicurrency object', function () {
+      const multicurrencyAmountOff = { USD: 700, EUR: 600 };
+      assert.equal(discountableMulticurrency(1000, null, 300, multicurrencyAmountOff, 'GBP'), 700);
+    });
+
+    it('falls back to amountOffInCents when multicurrency object is undefined', function () {
+      assert.equal(discountableMulticurrency(1000, null, 300, undefined, 'USD'), 700);
+    });
+
+    it('prioritizes percentOff over both multicurrency and amountOffInCents', function () {
+      const multicurrencyAmountOff = { USD: 700, EUR: 600 };
+      assert.equal(discountableMulticurrency(1000, 20, 300, multicurrencyAmountOff, 'USD'), 800);
     });
   });
 });
