@@ -220,12 +220,12 @@ describe('totalDueNowMulticurrency', function () {
       totalDueNowMulticurrency({
         quantity: 1,
         coupon: {
-          multicurrencyAmountOff: { USD: 500, EUR: 400, KRW: 50000 },
-          currencyCode: 'USD'
+          multicurrencyAmountOff: { USD: 500, EUR: 400, KRW: 50000 }
         },
         price: {
           unitAmount: 1000,
-          locale: 'en_US'
+          locale: 'en_US',
+          currencyCode: 'USD'
         }
       }),
       500
@@ -235,12 +235,12 @@ describe('totalDueNowMulticurrency', function () {
       totalDueNowMulticurrency({
         quantity: 1,
         coupon: {
-          multicurrencyAmountOff: { USD: 500, EUR: 400, KRW: 50000 },
-          currencyCode: 'EUR'
+          multicurrencyAmountOff: { USD: 500, EUR: 400, KRW: 50000 }
         },
         price: {
           unitAmount: 1000,
-          locale: 'de_DE'
+          locale: 'de_DE',
+          currencyCode: 'EUR'
         }
       }),
       600
@@ -253,12 +253,12 @@ describe('totalDueNowMulticurrency', function () {
         quantity: 5,
         coupon: {
           multicurrencyAmountOff: { USD: 200, EUR: 150 },
-          currencyCode: 'USD',
           amountOffInCents: 100 // fallback amount
         },
         price: {
           unitAmount: 1000,
-          locale: 'en_US'
+          locale: 'en_US',
+          currencyCode: 'USD'
         },
         purchasableType: 'bundle',
         isBulkPurchase: true
@@ -273,12 +273,12 @@ describe('totalDueNowMulticurrency', function () {
         quantity: 1,
         coupon: {
           percentOff: 25,
-          multicurrencyAmountOff: { USD: 500, EUR: 400 },
-          currencyCode: 'USD'
+          multicurrencyAmountOff: { USD: 500, EUR: 400 }
         },
         price: {
           unitAmount: 1000,
-          locale: 'en_US'
+          locale: 'en_US',
+          currencyCode: 'USD'
         }
       }),
       750 // percentOff takes precedence over multicurrency amount
@@ -291,12 +291,12 @@ describe('totalDueNowMulticurrency', function () {
         quantity: 1,
         coupon: {
           multicurrencyAmountOff: { USD: 500, EUR: 400 },
-          currencyCode: 'GBP', // not in multicurrency object
           amountOffInCents: 300
         },
         price: {
           unitAmount: 1000,
-          locale: 'en_GB'
+          locale: 'en_GB',
+          currencyCode: 'GBP' // not in multicurrency object
         }
       }),
       700 // 1000 - 300 = 700

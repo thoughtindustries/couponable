@@ -159,7 +159,7 @@ function totalDueNowMulticurrency(orderItem) {
           orderItem.coupon.percentOff,
           totalUnitAmountOff || orderItem.coupon.amountOffInCents,
           orderItem.coupon.multicurrencyAmountOff,
-          orderItem.coupon.currencyCode
+          orderItem.price.currencyCode
         )
       );
     }
